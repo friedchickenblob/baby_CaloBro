@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import React, { useState, useRef, useEffect } from "react";
 import "../App.css";
 
@@ -23,7 +24,7 @@ export default function NutritionChat({ summary }) {
     setIsTyping(true);
 
     try {
-      const res = await fetch("https://web-production-2a2a3.up.railway.app/api/chat", {
+      const res = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg, summary: summary })

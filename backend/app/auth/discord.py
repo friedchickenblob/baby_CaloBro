@@ -75,7 +75,7 @@ async def discord_callback(code: str, request: Request):
         db.refresh(user)
 
     response = RedirectResponse(
-    url="https://calobroski.vercel.app/",
+    url=os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/") + "/",
     status_code=302,
 )
 

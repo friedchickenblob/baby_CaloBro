@@ -1,7 +1,6 @@
 import base64
 import json
-from openai import OpenAI
-from app.config import OPENAI_API_KEY
+from app.llm import client, GEMINI_MODEL
 import re
 
 def extract_json(text):
@@ -30,8 +29,6 @@ def extract_json(text):
             pass
 
     return None
-
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 async def detect_food(file):
     image_bytes = await file.read()
@@ -65,7 +62,7 @@ Return ONLY valid JSON in this exact format:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=GEMINI_MODEL,
         messages=[
             {
                 "role": "user",
@@ -80,7 +77,7 @@ Return ONLY valid JSON in this exact format:
                 ]
             }
         ],
-        max_tokens=300
+        max_tokens=1000
     )
 
     raw = response.choices[0].message.content.strip()

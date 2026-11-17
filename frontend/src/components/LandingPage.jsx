@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../App.css";
@@ -15,7 +16,7 @@ export default function LandingPage() {
   const [achievements, setAchievements] = useState(null);
 
   useEffect(() => {
-    fetch("https://web-production-2a2a3.up.railway.app/auth/me", {
+    fetch(`${API_URL}/auth/me`, {
       credentials: "include",
     })
       .then(res => res.json())
@@ -26,7 +27,7 @@ export default function LandingPage() {
 
   // Change your fetch to handle the data better
   useEffect(() => {
-    fetch("https://web-production-2a2a3.up.railway.app/achievements", { credentials: "include" })
+    fetch(`${API_URL}/achievements`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         console.log("Achievement Data:", data);

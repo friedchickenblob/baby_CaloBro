@@ -12,7 +12,7 @@ from datetime import datetime, date,  timedelta
 from sqlalchemy import func
 from fastapi import Form, Body, Request
 import os
-from openai import OpenAI
+from app.llm import client, GEMINI_MODEL
 
 from typing import Optional, Dict # for chatbot
 from app.auth.discord import router as discord_router
@@ -25,23 +25,24 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi import HTTPException, Request
 
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
 Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(title="Calorie AI Backend")
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+IS_HTTPS = FRONTEND_URL.startswith("https://")
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SESSION_SECRET"),
-    same_site="none",   # REQUIRED for Vercel → Railway
-    https_only=True,    # REQUIRED for secure cookies
+    # Deployed (Vercel -> Railway) is cross-site and needs SameSite=None + Secure.
+    # Local http://localhost is same-site, so Lax without Secure works.
+    same_site="none" if IS_HTTPS else "lax",
+    https_only=IS_HTTPS,
 )
 
-origins = [
-    "https://calobroski.vercel.app",  # your frontend URL
-]
+origins = [FRONTEND_URL]
 
 app.add_middleware(
     CORSMiddleware,
@@ -251,13 +252,13 @@ def analyze_manual(entry: ManualFoodEntry):
     prompt = f"Provide nutrition info for '{entry.food}' with portion '{entry.portion}'. JSON ONLY: {{'food': 'name', 'calories': 0, 'protein': 0, 'fat': 0, 'carbs': 0}}"
 
     response = client.chat.completions.create(
-        model="gpt-4",
+        model=GEMINI_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
-    
-    import json
-    nutrition = json.loads(response.choices[0].message.content)
+
+    from app.vision import extract_json
+    nutrition = extract_json(response.choices[0].message.content) or {}
     
     # Return to frontend for review, DON'T save to FoodLog yet
     return {
@@ -343,13 +344,13 @@ async def chat_endpoint(request: ChatRequest):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4",
+            model=GEMINI_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
             temperature=0.7,
-            max_tokens=150
+            max_tokens=800
         )
 
         reply = response.choices[0].message.content.strip()

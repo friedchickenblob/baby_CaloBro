@@ -1,10 +1,11 @@
+import { API_URL } from "../config";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../App.css";
 import logoIcon from "../assets/calobro-icon.png";
 
 const login = () => {
-  window.location.href = "https://web-production-2a2a3.up.railway.app/auth/discord/login";
+  window.location.href = `${API_URL}/auth/discord/login`;
 };
 
 const Navbar = () => {
@@ -13,7 +14,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  fetch("https://web-production-2a2a3.up.railway.app/auth/me", {
+  fetch(`${API_URL}/auth/me`, {
     credentials: "include",
   })
     .then(res => res.json())
@@ -25,7 +26,7 @@ const Navbar = () => {
 }, []);
 
   const logout = async () => {
-    await fetch("https://web-production-2a2a3.up.railway.app/auth/logout", {
+    await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

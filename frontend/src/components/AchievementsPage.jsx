@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -21,7 +22,7 @@ export default function AchievementsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("https://web-production-2a2a3.up.railway.app/achievements/full", {
+      const res = await fetch(`${API_URL}/achievements/full`, {
         credentials: "include"
       });
       const data = await res.json();

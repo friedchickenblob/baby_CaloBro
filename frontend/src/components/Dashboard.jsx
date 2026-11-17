@@ -1,3 +1,4 @@
+import { API_URL } from "../config";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
@@ -54,11 +55,11 @@ function WeeklyCalendar() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const resTotal = await fetch("https://web-production-2a2a3.up.railway.app/summary/weekly", { credentials: "include" });
+      const resTotal = await fetch(`${API_URL}/summary/weekly`, { credentials: "include" });
       const dataTotal = await resTotal.json();
       setWeeklyData(dataTotal.totals);
 
-      const resDots = await fetch("https://web-production-2a2a3.up.railway.app/summary/weekly-breakdown", { credentials: "include" });
+      const resDots = await fetch(`${API_URL}/summary/weekly-breakdown`, { credentials: "include" });
       const dataDots = await resDots.json();
       console.log("BACKEND DATA:", dataDots); // Check if 'day' strings match your 'last7Days'
       setBreakdown(dataDots);
@@ -138,15 +139,15 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dailyRes = await fetch("https://web-production-2a2a3.up.railway.app/summary/daily", { credentials: "include" });
+        const dailyRes = await fetch(`${API_URL}/summary/daily`, { credentials: "include" });
         const dailyData = await dailyRes.json();
         setSummary(dailyData.totals);
 
-        const logRes = await fetch("https://web-production-2a2a3.up.railway.app/summary/daily-log", { credentials: "include" });
+        const logRes = await fetch(`${API_URL}/summary/daily-log`, { credentials: "include" });
         const logData = await logRes.json();
         setDailyItems(logData);
 
-        const weeklyRes = await fetch("https://web-production-2a2a3.up.railway.app/summary/weekly", { credentials: "include" });
+        const weeklyRes = await fetch(`${API_URL}/summary/weekly`, { credentials: "include" });
         const weeklyData = await weeklyRes.json();
         setWeeklyData(weeklyData.totals);
 
@@ -160,7 +161,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchGoals = async () => {
-      const res = await fetch("https://web-production-2a2a3.up.railway.app/goals/daily", { credentials: "include" });
+      const res = await fetch(`${API_URL}/goals/daily`, { credentials: "include" });
       const data = await res.json();
 
       if (data?.calories && data.calories > 0) {
