@@ -1,5 +1,6 @@
 import os
 import httpx
+from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from app.db import SessionLocal
@@ -13,14 +14,30 @@ CLIENT_SECRET = os.getenv("DISCORD_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("DISCORD_REDIRECT_URI")
 
 
+def _allowed_frontends():
+    raw = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    return [u.strip().rstrip("/") for u in raw.split(",") if u.strip()]
+
+
+def _pick_frontend(requested: str | None) -> str:
+    """Return the requested frontend only if it is in the allow-list."""
+    allowed = _allowed_frontends()
+    if requested and requested.rstrip("/") in allowed:
+        return requested.rstrip("/")
+    return allowed[0]
+
+
 @router.get("/login")
-async def discord_login():
+async def discord_login(frontend: str | None = None):
+    # The frontend passes its own origin so we can send the user back to it.
+    state = quote(_pick_frontend(frontend), safe="")
     url = (
         "https://discord.com/api/oauth2/authorize"
         f"?client_id={CLIENT_ID}"
         "&response_type=code"
         "&scope=identify email"
         f"&redirect_uri={REDIRECT_URI}"
+        f"&state={state}"
     )
     return RedirectResponse(url)
 
@@ -30,7 +47,7 @@ async def discord_login():
 
 
 @router.get("/callback")
-async def discord_callback(code: str, request: Request):
+async def discord_callback(code: str, request: Request, state: str | None = None):
     async with httpx.AsyncClient() as client:
         # exchange code for token
         token_res = await client.post(
@@ -75,7 +92,7 @@ async def discord_callback(code: str, request: Request):
         db.refresh(user)
 
     response = RedirectResponse(
-    url=os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/") + "/",
+    url=_pick_frontend(state) + "/",
     status_code=302,
 )
 

@@ -5,7 +5,7 @@ import "../App.css";
 import logoIcon from "../assets/calobro-icon.png";
 
 const login = () => {
-  window.location.href = `${API_URL}/auth/discord/login`;
+  window.location.href = `${API_URL}/auth/discord/login?frontend=${encodeURIComponent(window.location.origin)}`;
 };
 
 const Navbar = () => {

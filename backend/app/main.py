@@ -30,8 +30,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Calorie AI Backend")
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
-IS_HTTPS = FRONTEND_URL.startswith("https://")
+# FRONTEND_URL may hold several comma-separated origins, e.g.
+# "https://calobro.jordanckwan.dev,https://calobroski.vercel.app"
+FRONTEND_URLS = [
+    u.strip().rstrip("/")
+    for u in os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")
+    if u.strip()
+]
+IS_HTTPS = FRONTEND_URLS[0].startswith("https://")
 
 app.add_middleware(
     SessionMiddleware,
@@ -42,7 +48,7 @@ app.add_middleware(
     https_only=IS_HTTPS,
 )
 
-origins = [FRONTEND_URL]
+origins = FRONTEND_URLS
 
 app.add_middleware(
     CORSMiddleware,
